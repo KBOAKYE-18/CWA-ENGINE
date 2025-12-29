@@ -36,7 +36,7 @@ int main(void){
     
     printf("Enter completed courses:");
     if(fgets(buf_com_courses,MAX_BUF,stdin) != NULL){
-        printf("Completed courses was read successfully\n");
+        printf("Completed courses read successfully\n");
     }else{
         if(feof(stdin)){
             fprintf(stderr,"End of File for completed courses\n");
@@ -50,7 +50,7 @@ int main(void){
 
     printf("Enter remaining courses:");
     if(fgets(buf_rem_courses,MAX_BUF,stdin) != NULL){
-        printf("Remaining courses was read successfully\n");
+        printf("Remaining courses  read successfully\n");
     }else{
         if(feof(stdin)){
             fprintf(stderr,"End of File for remaining courses\n");
@@ -64,7 +64,7 @@ int main(void){
 
     printf("Enter completed credits for each course:");
     if(fgets(buf_com_credits,MAX_BUF,stdin) != NULL){
-        printf("Completed courses was read successfully\n");
+        printf("Completed course credits  read successfully\n");
     }else{
         if(feof(stdin)){
             fprintf(stderr,"End of File for completed credits\n");
@@ -77,7 +77,7 @@ int main(void){
 
     printf("Enter remaining course credits:");
     if(fgets(buf_rem_credits,MAX_BUF,stdin) != NULL){
-        printf("Completed courses was read successfully\n");
+        printf("Completed course credits read successfully\n");
     }else{
         if(feof(stdin)){
             fprintf(stderr,"End of File for remianing credits\n");
@@ -90,7 +90,7 @@ int main(void){
 
     printf("Enter scores for each course(completed):");
     if(fgets(buf_com_scores,MAX_BUF,stdin) != NULL){
-        printf("Completed courses was read successfully\n");
+        printf("Completed courses read successfully\n");
     }else{
         if(feof(stdin)){
             fprintf(stderr,"End of File for completed score\n");
@@ -108,6 +108,18 @@ int main(void){
     scanf("%d",&num_rem_courses);
 
     Student student = init_student(student_name,buf_com_courses,buf_rem_courses,buf_com_credits,buf_rem_credits,buf_com_scores,num_rem_courses,num_com_courses);
+    
+    float current_cwa ;
+    float target_cwa;
+
+    printf("Enter current cwa:");
+    scanf("%f",&current_cwa);
+
+    printf("Enter target cwa:");
+    scanf("%f",&target_cwa);
+
+    print_details(student,current_cwa,target_cwa);
+    
     destroy_student(student);
 
     return 0;

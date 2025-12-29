@@ -7,11 +7,9 @@ typedef struct student *Student;
 
 
 
-
 Student init_student(char*,char*,char*,char*,char*,char*,int,int);
 void destroy_student(Student);
-float cwa_needed(Student,float,float);
-void print_details(Student,float);
+void print_details(Student,float,float);
 
 
 #endif
