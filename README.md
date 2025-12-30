@@ -12,4 +12,6 @@ This library handles all core calculations while Python (or any frontend) can ha
 - Encapsulated design with **public API only**
 - Easy to integrate with Python (or other languages) for front-end/visualization
 
+Note: Windows users need MinGW or a similar GCC environment installed       to run the makefile.
+
 ---
