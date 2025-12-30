@@ -1,15 +1,12 @@
 #ifndef ESTIMATER_H
 #define ESTIMATER_H
 
-#define MAX_BUF 1024
-#define MAX_COURSE 100
 typedef struct student *Student;
+#define MAX_NAME 1024
 
-
-
-Student init_student(char*,char*,char*,char*,char*,char*,int,int);
-void destroy_student(Student);
-void print_details(Student,float,float);
-
+Student init_student(char*name,int com_credit,int rem_credit,float curr_cwa,float target_cwa);
+float calculate_fair_distribution(const Student student);
+float recalculate_fair_distribution(const Student student,float priority_score,int priority_credit);
+void destroy_object(const Student student);
 
 #endif

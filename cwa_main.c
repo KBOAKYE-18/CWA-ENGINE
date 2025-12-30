@@ -1,126 +1,60 @@
 #include<stdio.h>
-#include<stdlib.h>
 #include "cwa_estimater.h"
 
-
-
 int main(void){
-    int num_com_courses;
-    int num_rem_courses;
-
-    printf("This is CWA Estimater\n");
-
-    char buf_com_courses[MAX_BUF];
-    char buf_rem_courses[MAX_BUF];
-    char buf_com_credits[MAX_BUF];
-    char buf_rem_credits[MAX_BUF];
-    char buf_com_scores[MAX_BUF];
-    char student_name[MAX_BUF];
-
-    
-
-    printf("Enter name:");
-    if(fgets(student_name,MAX_BUF,stdin) != NULL){
-        printf("Name read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File while reading name\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error happened while reading name\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-
-    
-    printf("Enter completed courses:");
-    if(fgets(buf_com_courses,MAX_BUF,stdin) != NULL){
-        printf("Completed courses read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File for completed courses\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error for completed courses\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-
-    printf("Enter remaining courses:");
-    if(fgets(buf_rem_courses,MAX_BUF,stdin) != NULL){
-        printf("Remaining courses  read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File for remaining courses\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error for remaining courses\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-
-    printf("Enter completed credits for each course:");
-    if(fgets(buf_com_credits,MAX_BUF,stdin) != NULL){
-        printf("Completed course credits  read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File for completed credits\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error for completed credits\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    printf("Enter remaining course credits:");
-    if(fgets(buf_rem_credits,MAX_BUF,stdin) != NULL){
-        printf("Completed course credits read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File for remianing credits\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error for remaining credits\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    printf("Enter scores for each course(completed):");
-    if(fgets(buf_com_scores,MAX_BUF,stdin) != NULL){
-        printf("Completed courses read successfully\n");
-    }else{
-        if(feof(stdin)){
-            fprintf(stderr,"End of File for completed score\n");
-            exit(EXIT_FAILURE);
-        }else{
-            fprintf(stderr,"Read error for completed scores\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    printf("Enter number of completed courses:");
-    scanf("%d",&num_com_courses);
-
-    printf("Enter number of remaining courses:");
-    scanf("%d",&num_rem_courses);
-
-    Student student = init_student(student_name,buf_com_courses,buf_rem_courses,buf_com_credits,buf_rem_credits,buf_com_scores,num_rem_courses,num_com_courses);
-    
-    float current_cwa ;
+    char buf_name[MAX_NAME];
+    int com_credits;
+    int rem_credits;
+    float curr_cwa;
     float target_cwa;
 
-    printf("Enter current cwa:");
-    scanf("%f",&current_cwa);
+    printf("Enter name:");
+    fgets(buf_name,MAX_NAME,stdin);
 
-    printf("Enter target cwa:");
+    printf("Enter total completed credit:");
+    scanf("%d",&com_credits);
+
+    printf("Enter total remaining credits:");
+    scanf("%d",&rem_credits);
+
+    printf("Enter current CWA:");
+    scanf("%f",&curr_cwa);
+
+    printf("Enter target CWA:");
     scanf("%f",&target_cwa);
 
-    print_details(student,current_cwa,target_cwa);
+
+    Student student = init_student(
+        buf_name,com_credits,rem_credits,curr_cwa,target_cwa
+    );
+
+
+    float fair_dist = calculate_fair_distribution(student);
+
+    if(fair_dist == -1 || fair_dist == 0 ){
+        printf("Impossible:Not realistic\n");
+    }else{
+        printf("Fair distribution:%.2f\n",fair_dist);
+    }
     
-    destroy_student(student);
+
+    
+
+    float p_score;
+    int p_credit;
+    printf("Enter priority score and credit:");
+    scanf("%f %d",&p_score,&p_credit);
+
+    float recalculate_fair_dist = recalculate_fair_distribution(student,p_score,p_credit);
+
+    if(recalculate_fair_dist == -1 || recalculate_fair_dist == 0 ){
+        printf("Impossible:Not realistic\n");
+    }else{
+        printf("Recalculated fair distribution:%.2f\n",recalculate_fair_dist);
+    }
+    
+
+    destroy_object(student);
 
     return 0;
 }
