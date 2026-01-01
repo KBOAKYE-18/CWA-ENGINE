@@ -16,21 +16,21 @@ struct student{
 };
 
 PUBLIC Student init_student(char*name,int com_credit,int rem_credit,float curr_cwa,float target_cwa){
-    printf("Initializing Object..........\n");
+    //Allocate memory for student struct
     Student student = malloc(sizeof(struct student));
     if(!student){
         fprintf(stderr,"Allocation error\n");
         return NULL;
     }
 
-    printf("Setting internal state............\n");
+    //Set Struct fields
     student->name = name;
     student->completed_credits = com_credit;
     student->remaining_credits = rem_credit;
     student->current_cwa = curr_cwa;
     student->target_cwa = target_cwa;
 
-    printf("Object initialized successfully\n");
+    
     return student;
 
 }
@@ -46,34 +46,31 @@ PUBLIC float calculate_fair_distribution(const Student student){
 
     if(score_dist > 100 || score_dist < 0){
         if(score_dist > 100){
-            return 0;
-        }else{
             return -1;
+        }else{
+            return -2;
         }
     }
 
     return score_dist;
 }
 
-PUBLIC float recalculate_fair_distribution(const Student student,float priority_score,int priority_credit){
+PUBLIC float recalculate_fair_distribution(const Student student,float total_priority_wa,int total_priority_credit){
     float local_wa_remain = student->wa_remain;
-    float priority_wa = priority_credit * priority_score;
-
-    float wa_diff = local_wa_remain - priority_wa;
-    float credit_hr_diff = student->remaining_credits - priority_credit;
+    
+    float wa_diff = local_wa_remain - total_priority_wa;
+    float credit_hr_diff = student->remaining_credits - total_priority_credit;
     float score_dist = (wa_diff)/ (credit_hr_diff);
 
     //Return 0 if score exceeds 100
     //Return -1 if score is less than 0
     if(score_dist > 100 || score_dist < 0){
         if(score_dist > 100){
-            return 0;
-        }else{
             return -1;
+        }else{
+            return -2;
         }
     }
-
-
     
     return score_dist;
     
@@ -81,5 +78,4 @@ PUBLIC float recalculate_fair_distribution(const Student student,float priority_
 
 PUBLIC void destroy_object(const Student student){
     free(student);
-    printf("Object has been destryed\n");
 }
