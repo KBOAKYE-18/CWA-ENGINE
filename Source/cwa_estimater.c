@@ -6,16 +6,26 @@
 #define PUBLIC 
 #define PRIVATE static
 
+
 struct student{
-    char*name;
-    int completed_credits;
-    int remaining_credits;
-    float current_cwa;
-    float target_cwa;
-    float wa_remain;
+    int credit_completed;
+    int credit_remaining;
+    union {
+        struct {
+            float weighted_average_remain;
+            float target_CWA;
+            float current_CWA;
+        } CWA;
+        struct {
+            float gradePoints_needed;
+            float target_CGPA;
+            float current_CGPA;
+        } CGPA;
+    } academic_system;
+    enum {CWA_KIND,CGPA_KIND} kind;
 };
 
-PUBLIC Student init_student(char*name,int com_credit,int rem_credit,float curr_cwa,float target_cwa){
+PUBLIC Student init_student(int credits_com,int credits_remain){
     //Allocate memory for student struct
     Student student = malloc(sizeof(struct student));
     if(!student){
@@ -24,55 +34,148 @@ PUBLIC Student init_student(char*name,int com_credit,int rem_credit,float curr_c
     }
 
     //Set Struct fields
-    student->name = name;
-    student->completed_credits = com_credit;
-    student->remaining_credits = rem_credit;
-    student->current_cwa = curr_cwa;
-    student->target_cwa = target_cwa;
-
+    student->credit_completed = credits_com;
+    student->credit_remaining = credits_remain;
     
     return student;
 
 }
 
-PUBLIC float calculate_fair_distribution(const Student student){
-    int total_credit_hrs = student->completed_credits + student->remaining_credits;
-    float weighted_average_com = student->current_cwa * student->completed_credits;
-    float final_weighted_average = (student->target_cwa) * total_credit_hrs;
-    float weighted_average_remain = final_weighted_average - weighted_average_com;
-
-    float score_dist = (weighted_average_remain )/ (student->remaining_credits);
-    student->wa_remain = weighted_average_remain;
-
-    if(score_dist > 100 || score_dist < 0){
-        if(score_dist > 100){
-            return -1;
-        }else{
-            return -2;
-        }
+PUBLIC float calculate_dist_CWA(const Student student,float target_cwa,float current_cwa){
+    //Check if student is null
+    if(!student){
+        fprintf(stderr,"CWA dist Error:Student type was NULL");
+        return -1;
+    }
+    
+    //Check for division by zero
+    if(target_cwa == 0 || current_cwa == 0 || target_cwa < current_cwa){
+        fprintf(stderr,"Computation error!");
+        return -3;
     }
 
+    //Calculate score distribution for CWA
+    int total_credits = student->credit_completed + student->credit_remaining;
+    float total_WA = target_cwa * total_credits;
+    float current_WA = current_cwa * student->credit_completed;
+    float expected_WA = total_WA - current_WA;
+    float score_dist = (expected_WA)/(student->credit_remaining);
+
+    //Check if score is realistic
+    if(score_dist > 100 || score_dist < 0){
+        fprintf(stderr,"Impossible score to obtain");
+        return -2;
+    }
+
+    //Set CWA specifics together with the kind
+    student->academic_system.CWA.target_CWA = target_cwa;
+    student->academic_system.CWA.current_CWA = current_cwa;
+    student->academic_system.CWA.weighted_average_remain = expected_WA;
+
+    student->kind = CWA_KIND;
+
     return score_dist;
+
 }
 
-PUBLIC float recalculate_fair_distribution(const Student student,float total_priority_wa,int total_priority_credit){
-    float local_wa_remain = student->wa_remain;
-    
-    float wa_diff = local_wa_remain - total_priority_wa;
-    float credit_hr_diff = student->remaining_credits - total_priority_credit;
-    float score_dist = (wa_diff)/ (credit_hr_diff);
+PUBLIC float calculate_dist_CGPA(const Student student,float target_cgpa,int current_cgpa){
+    //Check if student is null
+    if(!student){
+        fprintf(stderr,"CGPA dist Error:Student type was NULL");
+        return -1;
+    }
 
-    //Return 0 if score exceeds 100
-    //Return -1 if score is less than 0
-    if(score_dist > 100 || score_dist < 0){
-        if(score_dist > 100){
-            return -1;
-        }else{
-            return -2;
-        }
+    //Check for division by zero
+    if(target_cgpa == 0 || current_cgpa == 0 || target_cgpa < current_cgpa){
+        fprintf(stderr,"Computation error");
+        return -3;
+    }
+
+    //Calculate distribution for CGPA
+    int total_credits = student->credit_completed + student->credit_remaining;
+    float total_pts = target_cgpa * total_credits;
+    float current_pts = current_cgpa * student->credit_completed;
+    float expected_pts = total_pts  -  current_pts;
+    float grade_dist = (expected_pts )/ (student->credit_remaining);
+
+
+    //Check if score is realistic
+    if(grade_dist < 0){
+        fprintf(stderr,"Impossible score to obtain");
+        return -2;
+    }
+
+
+    //Set CGPA specifics
+    student->academic_system.CGPA.target_CGPA = target_cgpa;
+    student->academic_system.CGPA.current_CGPA = current_cgpa;
+    student->academic_system.CGPA.gradePoints_needed = expected_pts;
+
+    student->kind = CGPA_KIND;
+
+    return grade_dist;
+
+}
+
+
+PUBLIC float recalculate_dist_CWA(const Student student,float total_achievable_WA,int total_achievable_Credits){
+    if(!student){
+        fprintf(stderr,"CWA recalc_dist Error:Student type was NULL");
+        return -1;
     }
     
-    return score_dist;
+
+    if(total_achievable_Credits <= 0 && total_achievable_WA > 0 || total_achievable_Credits > 0 && total_achievable_WA <= 0 ){
+        fprintf(stderr,"Computation error");
+        return -3;
+    }
+
+    
+    if(student->kind != CWA_KIND){
+        printf(stderr,"Function call mismatch");
+        return -4;
+    }
+
+    float WA_remain = student->academic_system.CWA.weighted_average_remain;
+    float remain_credit = student->credit_remaining;
+    float score_redist = (WA_remain - total_achievable_WA)/(remain_credit - total_achievable_Credits);
+
+    if(score_redist > 100 || score_redist < 0){
+        fprintf(stderr,"Impossible score to obtain");
+        return -2;
+    }
+
+    return score_redist;  
+    
+}
+
+PUBLIC float recalculate_dist_CGPA(const Student student,float total_achievable_gradePts,int total_achievable_Credits){
+    if(!student){
+        fprintf(stderr,"CGPA recalc_dist Error:Student type was NULL");
+        return -1;
+    }
+
+    if(total_achievable_Credits <= 0 && total_achievable_gradePts > 0 || total_achievable_Credits > 0 && total_achievable_gradePts <= 0 ){
+        fprintf(stderr,"Computation error");
+        return -3;
+    }
+
+    
+    if(student->kind != CGPA_KIND){
+        printf(stderr,"Function call mismatch");
+        return -4;
+    }
+
+    float gradePts_remain = student->academic_system.CGPA.gradePoints_needed;
+    float remain_credit = student->credit_remaining;
+    float grade_redist = (gradePts_remain- total_achievable_gradePts)/(remain_credit - total_achievable_Credits);
+
+    if(grade_redist < 0){
+        fprintf(stderr,"Impossible score to obtain");
+        return -2;
+    }
+
+    return grade_redist;  
     
 }
 
