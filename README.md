@@ -1,5 +1,5 @@
 # CWA-ENGINE
-A **C-based backend engine** for computing Cumulative Weighted Average (CWA) and Weighted Average (WA) for students.  
+A **C-based backend engine** for computing CWA and CGPA for students.  
 This library handles all core calculations while Python (or any frontend) can handle file input, visualization, and user interface.
 
 ---
